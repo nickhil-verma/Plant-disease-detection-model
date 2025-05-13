@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Plant Disease Predictor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Plant Disease Detection</h1>
+
+        <form method="post" enctype="multipart/form-data">
+            <input type="file" name="image" accept="image/*" required>
+            <br>
+            <input type="submit" value="Upload and Predict">
+        </form>
+
+        <p>or</p>
+
+        <button onclick="openCamera()">📷 Take Live Photo</button>
+
+        <div id="camera" style="display: none; margin-top: 20px;">
+            <video id="video" width="300" autoplay></video><br>
+            <button onclick="takeSnapshot()">Capture</button>
+            <canvas id="canvas" style="display: none;"></canvas>
+        </div>
+
+        {% if prediction %}
+            <h3>Prediction: {{ prediction }}</h3>
+            <p>Confidence: {{ confidence }}</p>
+            <img src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Uploaded Image">
+        {% endif %}
+    </div>
+
+    <script>
+        function openCamera() {
+            document.getElementById('camera').style.display = 'block';
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    document.getElementById('video').srcObject = stream;
+                });
+        }
+
+        function takeSnapshot() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            canvas.toBlob(blob => {
+                const form = new FormData();
+                form.append("image", blob, "capture.jpg");
+
+                fetch("/", { method: "POST", body: form })
+                    .then(res => res.text())
+                    .then(html => document.documentElement.innerHTML = html);
+            }, 'image/jpeg');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: plant-disease-detector
+    env: python
+    buildCommand: ""
+    startCommand: python test.py
+    envVars:
+      - key: PORT
+        value: 10000
